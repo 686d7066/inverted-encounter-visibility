@@ -1,0 +1,26 @@
+{
+    "id": "encounter-visibility",
+    "title": "Encounter Visibility",
+    "description": "A simple module for controlling visibility of encounters.",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "rkfmckee",
+            "url": "https://github.com/rkfmckee",
+            "github": "rkfmckee"
+        }
+    ],
+    "compatibility": {
+        "minimum": "13.351",
+        "verified": "13"
+    },
+    "scripts": ["scripts/encounter-visibility.js"],
+    "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "languages/en.json"
+        }
+    ],
+    "styles": ["styles/encounter-visibility.css"]
+}
