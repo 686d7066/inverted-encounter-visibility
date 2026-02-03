@@ -1,20 +1,19 @@
 {
     "id": "encounter-visibility",
     "title": "Encounter Visibility",
-    "description": "A simple module for controlling visibility of encounters.",
+    "description": "A simple module for hiding encounters from players.",
     "version": "1.0.0",
     "authors": [
         {
             "name": "rkfmckee",
-            "url": "https://github.com/rkfmckee",
-            "github": "rkfmckee"
+            "url": "https://github.com/rkfmckee"
         }
     ],
     "compatibility": {
         "minimum": "13.351",
         "verified": "13"
     },
-    "scripts": ["scripts/encounter-visibility.js"],
+    "esmodules": ["scripts/encounter-visibility.js"],
     "languages": [
         {
             "lang": "en",

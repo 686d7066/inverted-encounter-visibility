@@ -1,3 +1,7 @@
+## Foundry files
+*.lock
+
+## Node files
 # Logs
 logs
 *.log
