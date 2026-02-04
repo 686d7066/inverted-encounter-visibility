@@ -2,7 +2,7 @@
     "id": "encounter-visibility",
     "title": "Encounter Visibility",
     "description": "A simple module for hiding encounters from players.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "authors": [
         {
             "name": "rkfmckee",
