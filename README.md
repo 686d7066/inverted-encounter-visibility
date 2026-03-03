@@ -1,7 +1,8 @@
 # Encounter Visibility
-
-**Verified Foundry version:** `v13.351`<br>
-**Verified system versions::** `D&D 5e v5.2.4` `Daggerheart v1.6.3` `Draw Steel v0.9.2`
+![Verified Foundry version](https://img.shields.io/badge/Foundry%20VTT-v13.351-orange)<br />
+![Verified D&D 5e system version](https://img.shields.io/badge/D%26D%205e-v5.2.4-darkred)
+![Verified Daggerheart system version](https://img.shields.io/badge/Daggerheart-v1.6.3-purple)
+![Verified Draw Steel system version](https://img.shields.io/badge/Draw%20Steel-v0.9.2-blue)
 
 Ever needed to pre-build an encounter, but also needed your players to be able to explore the same scene before it comes up?
 Well, sadly Foundry only allows you to switch between different encounters, but one of them always has to be visible. No more!

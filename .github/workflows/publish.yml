@@ -1,0 +1,33 @@
+name: Create Release
+
+on:
+    push:
+        branches:
+            - env/public
+
+jobs:
+    build:
+        name: Create Release
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Get Version # Run the script that returns the version from `module.json`
+              shell: bash
+              id: get-version
+              run: echo "version=$(node ./.github/workflows/get-version.js)" >> $GITHUB_OUTPUT
+            - run: zip -r ./module.zip module.json languages/ scripts/ styles/ templates/
+            - name: Create Release
+              id: create_release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  name: "v${{ steps.get-version.outputs.version }}"
+                  draft: false
+                  prerelease: false
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  artifacts: "./module.json,./module.zip"
+                  tag: ${{ steps.get-version.outputs.version }} # Use the version as the tag
+        permissions:
+            contents: write # To create a release, the workflow needs write permissions to the repository contents
+            pull-requests: write # To create a release, the workflow needs write permissions to pull requests
+            repository-projects: write # To create a release, the workflow needs write permissions to repository projects

@@ -1,4 +1,6 @@
-class EncounterVisibility {
+import { EncounterVisibilitySettings } from "./settings.js";
+
+export class EncounterVisibility {
     static Id = "encounter-visibility";
     static IsVisibleFlag = "isVisible";
 
@@ -44,11 +46,11 @@ Hooks.on("renderCombatTracker", (combatTracker, html, combatTrackerOptions, rend
     const encounterTitle = html.querySelector(".encounter-title");
 
     if (game.user.isGM) {
-        const hiddenFromPlayers = document.createTextNode("(Hidden)");
+        const textToAppend = game.settings.get(EncounterVisibility.Id, EncounterVisibilitySettings.encounterTitleGmId);
+        const hiddenFromPlayers = document.createTextNode(textToAppend);
         encounterTitle.appendChild(hiddenFromPlayers);
     } else {
-        encounterTitle.textContent = "No Encounter";
-
+        encounterTitle.textContent = game.settings.get(EncounterVisibility.Id, EncounterVisibilitySettings.encounterTitlePlayerId);
         const encounterList = html.querySelector(".combat-tracker");
         encounterList.innerHTML = "";
     }
