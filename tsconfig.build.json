@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist/encounter-visibility"
+  },
+  "include": [
+    "src/scripts/**/*.ts",
+    "src/types/**/*.d.ts"
+  ]
+}
