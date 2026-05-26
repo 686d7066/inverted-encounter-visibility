@@ -12,6 +12,9 @@ const runtime = globalThis as typeof globalThis & {
   };
   game?: {
     user: { isGM: boolean };
+    i18n: {
+      localize: (key: string) => string;
+    };
     settings: {
       get: (namespace: string, key: string) => unknown;
       register: (namespace: string, key: string, data: Record<string, unknown>) => void;
@@ -56,6 +59,9 @@ function installFoundryMocks(isGM = true): {
 
   runtime.game = {
     user: { isGM },
+    i18n: {
+      localize: (key: string) => key
+    },
     settings: {
       get: (namespace: string, key: string) => settingValues.get(`${namespace}.${key}`),
       register: (namespace: string, key: string, data: Record<string, unknown>) => {
@@ -75,6 +81,7 @@ test("registers expected hooks and module settings", async () => {
   const mocks = installFoundryMocks(true);
   await import("../src/scripts/inverted-encounter-visibility.ts");
 
+  assert.equal(typeof mocks.hookCallbacks.get("getCombatContextOptions"), "function");
   assert.equal(typeof mocks.hookCallbacks.get("getDocumentContextOptions"), "function");
   assert.equal(typeof mocks.hookCallbacks.get("combatStart"), "function");
   assert.equal(typeof mocks.hookCallbacks.get("renderApplicationV2"), "function");
@@ -94,8 +101,8 @@ test("adds show and hide options for combat tracker context menu", async () => {
   const mocks = installFoundryMocks(true);
   await import("../src/scripts/inverted-encounter-visibility.ts");
 
-  const getContextOptions = mocks.hookCallbacks.get("getDocumentContextOptions");
-  if (!getContextOptions) throw new Error("Expected getDocumentContextOptions hook callback");
+  const getCombatContextOptions = mocks.hookCallbacks.get("getCombatContextOptions");
+  if (!getCombatContextOptions) throw new Error("Expected getCombatContextOptions hook callback");
 
   let visibilityFlag = false;
   const encounter = {
@@ -110,7 +117,7 @@ test("adds show and hide options for combat tracker context menu", async () => {
   };
   const options: Array<{ name: string; condition: () => boolean; callback: () => unknown }> = [];
 
-  getContextOptions(application, options);
+  getCombatContextOptions(application, options);
 
   assert.equal(options.length, 2);
   const optionNames = options.map((option) => option.name);
@@ -122,6 +129,36 @@ test("adds show and hide options for combat tracker context menu", async () => {
   assert.equal(visibilityFlag, true);
   assert.equal(options[0]?.condition(), false);
   assert.equal(options[1]?.condition(), true);
+});
+
+test("does not duplicate context options when both hooks fire", async () => {
+  const mocks = installFoundryMocks(true);
+  await import("../src/scripts/inverted-encounter-visibility.ts");
+
+  const getCombatContextOptions = mocks.hookCallbacks.get("getCombatContextOptions");
+  const getDocumentContextOptions = mocks.hookCallbacks.get("getDocumentContextOptions");
+  if (!getCombatContextOptions || !getDocumentContextOptions) {
+    throw new Error("Expected context option hook callbacks");
+  }
+
+  const encounter = {
+    getFlag: () => false,
+    setFlag: () => undefined
+  };
+  const application = {
+    constructor: { name: "CombatTracker" },
+    viewed: encounter
+  };
+  const options: Array<{ name: string; condition: () => boolean; callback: () => unknown }> = [];
+
+  getCombatContextOptions(application, options);
+  getDocumentContextOptions(application, options);
+
+  assert.equal(options.length, 2);
+  assert.deepEqual(
+    options.map((option) => option.name),
+    ["Show Encounter to Players", "Hide Encounter from Players"]
+  );
 });
 
 test("hides encounter details for players on render when encounter is hidden", async () => {

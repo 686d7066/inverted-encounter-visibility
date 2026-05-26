@@ -12,8 +12,6 @@ const distRoot = resolve(distBase, moduleId);
 const tscPath = resolve(projectRoot, "node_modules", "typescript", "bin", "tsc");
 const staticEntries = [
     "module.json",
-    "templates",
-    "styles",
     "languages",
     "images",
 ];

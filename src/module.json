@@ -17,7 +17,8 @@
         }
     ],
     "compatibility": {
-        "minimum": "14"
+        "minimum": "14",
+        "verified": "14.363"
     },
     "esmodules": ["scripts/inverted-encounter-visibility.js", "scripts/settings.js"],
     "languages": [
@@ -26,6 +27,5 @@
             "name": "English",
             "path": "languages/en.json"
         }
-    ],
-    "styles": ["styles/inverted-encounter-visibility.css"]
+    ]
 }
