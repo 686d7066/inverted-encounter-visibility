@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    name: "encounter-visibility tests",
+        name: "inverted-encounter-visibility tests",
     include: ["tests/**/*.test.ts"],
     environment: "node"
   }

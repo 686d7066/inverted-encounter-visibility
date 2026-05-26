@@ -19,7 +19,7 @@ type ContextMenuEntry = {
 };
 
 export class EncounterVisibility {
-    static Id = "encounter-visibility";
+    static Id = "inverted-encounter-visibility";
     static IsVisibleFlag = "isVisible";
 
     static log(...args: unknown[]): void {

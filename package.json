@@ -1,5 +1,5 @@
 {
-  "name": "encounter-visibility",
+  "name": "inverted-encounter-visibility",
   "private": true,
   "type": "module",
   "scripts": {

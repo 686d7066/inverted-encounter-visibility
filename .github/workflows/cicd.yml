@@ -53,7 +53,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: module-build
-                  path: dist/encounter-visibility
+                  path: dist/inverted-encounter-visibility
 
     release:
         name: Create Release

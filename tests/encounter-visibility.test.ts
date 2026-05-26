@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, beforeEach, test, vi } from "vitest";
 
 type HookCallback = (...args: any[]) => unknown;
@@ -126,7 +128,7 @@ test("hides encounter details for players on render when encounter is hidden", a
   const mocks = installFoundryMocks(false);
   await import("../src/scripts/encounter-visibility.ts");
 
-  mocks.settingValues.set("encounter-visibility.encounterTitlePlayer", "No Encounter");
+  mocks.settingValues.set("inverted-encounter-visibility.encounterTitlePlayer", "No Encounter");
 
   const renderApplication = mocks.hookCallbacks.get("renderApplicationV2");
   if (!renderApplication) throw new Error("Expected renderApplicationV2 hook callback");
@@ -170,4 +172,14 @@ test("forces hidden encounters visible on combat start for GM", async () => {
   combatStart(combat);
 
   assert.equal(finalFlag, true);
+});
+
+test("uses the same module id for flags as module.json", async () => {
+  installFoundryMocks(true);
+  const { EncounterVisibility } = await import("../src/scripts/encounter-visibility.ts");
+  const moduleJsonPath = resolve(process.cwd(), "src", "module.json");
+  const moduleJson = JSON.parse(readFileSync(moduleJsonPath, "utf8")) as { id?: unknown };
+
+  assert.equal(typeof moduleJson.id, "string");
+  assert.equal(EncounterVisibility.Id, moduleJson.id);
 });

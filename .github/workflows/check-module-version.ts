@@ -3,8 +3,20 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+const moduleSourceRoots = ["src/"] as const;
+
 function run(command: string, args: string[]): string {
   return execFileSync(command, args, { encoding: "utf8" }).trim();
+}
+
+function getChangedFiles(baseSha: string): string[] {
+  const output = run("git", ["diff", "--name-only", `${baseSha}...HEAD`]);
+  if (output.length === 0) return [];
+  return output.split(/\r?\n/).filter((entry) => entry.length > 0);
+}
+
+function isModuleSourceFile(path: string): boolean {
+  return moduleSourceRoots.some((root) => path.startsWith(root));
 }
 
 function parseVersionSegments(version: string): number[] {
@@ -37,6 +49,16 @@ const baseSha = process.argv[2];
 if (!baseSha) {
   throw new Error("Missing pull request base SHA argument.");
 }
+
+const changedFiles = getChangedFiles(baseSha);
+const changedModuleSourceFiles = changedFiles.filter(isModuleSourceFile);
+
+if (changedModuleSourceFiles.length === 0) {
+  console.log("No module source changes detected; skipping version bump check.");
+  process.exit(0);
+}
+
+console.log(`Module source changes detected in ${changedModuleSourceFiles.length} file(s).`);
 
 const scriptPath = ".github/workflows/get-version.ts";
 const headVersion = run("node", ["--experimental-strip-types", scriptPath]);

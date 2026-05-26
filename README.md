@@ -16,6 +16,26 @@ Text will appear beside the encounter title showing it's been hidden from the pl
 
 All actors in the encounter will disappear, and the encounter title will change to `No Encounter`, the same as it is before any encounters are added.
 
+## For Other Modules
+
+Use `inverted-encounter-visibility` as the module id/scope and `isVisible` as the encounter flag key.
+
+```ts
+const MODULE_ID = "inverted-encounter-visibility";
+const FLAG_KEY = "isVisible";
+
+const isModuleActive = game.modules.get(MODULE_ID)?.active === true;
+
+if (isModuleActive) {
+    const flagValue = combat.getFlag(MODULE_ID, FLAG_KEY);
+    const isVisibleToPlayers = flagValue === true;
+    const isHiddenForPlayers = flagValue !== true;
+    const isExplicitlyMarkedHidden = flagValue === false;
+}
+```
+
+Always check module activation first. Calling `getFlag` with an inactive scope can throw in Foundry.
+
 ## Credits
 
 This module is based on [fvtt-encounter-visibility](https://github.com/Rkfmckee/fvtt-encounter-visibility)
