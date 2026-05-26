@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -6,7 +8,31 @@ import { join } from "node:path";
 const moduleSourceRoots = ["src/"] as const;
 
 function run(command: string, args: string[]): string {
-  return execFileSync(command, args, { encoding: "utf8" }).trim();
+  return execFileSync(command, args, {
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+  }).trim();
+}
+
+function getErrorText(error: unknown): string {
+  if (error && typeof error === "object") {
+    const maybeError = error as { stderr?: unknown; message?: unknown };
+    const stderr = maybeError.stderr;
+    if (typeof stderr === "string") return stderr;
+    if (stderr instanceof Uint8Array) return new TextDecoder().decode(stderr);
+    if (typeof maybeError.message === "string") return maybeError.message;
+  }
+  return "";
+}
+
+function getBaseModuleJson(baseSha: string): string | null {
+  try {
+    return run("git", ["show", `${baseSha}:src/module.json`]);
+  } catch (error) {
+    const details = getErrorText(error);
+    if (details.includes("exists on disk, but not in")) return null;
+    throw error;
+  }
 }
 
 function getChangedFiles(baseSha: string): string[] {
@@ -62,12 +88,17 @@ console.log(`Module source changes detected in ${changedModuleSourceFiles.length
 
 const scriptPath = ".github/workflows/get-version.ts";
 const headVersion = run("node", ["--experimental-strip-types", scriptPath]);
+const baseModuleJson = getBaseModuleJson(baseSha);
+
+if (!baseModuleJson) {
+  console.log("Base revision has no src/module.json; skipping version bump check for initial module introduction.");
+  process.exit(0);
+}
 
 const tempDirectory = mkdtempSync(join(tmpdir(), "inverted-encounter-visibility-base-"));
 const baseModuleJsonPath = join(tempDirectory, "module.json");
 
 try {
-  const baseModuleJson = run("git", ["show", `${baseSha}:src/module.json`]);
   writeFileSync(baseModuleJsonPath, baseModuleJson, "utf8");
 
   const baseVersion = run("node", ["--experimental-strip-types", scriptPath, baseModuleJsonPath]);
