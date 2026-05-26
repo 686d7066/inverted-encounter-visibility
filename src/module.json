@@ -1,6 +1,6 @@
 {
-    "id": "encounter-visibility-v14",
-    "title": "Encounter Visibility for v14+",
+    "id": "inverted-encounter-visibility",
+    "title": "Inverted Encounter Visibility",
     "type": "module",
     "description": "A simple module for hiding encounters from players.",
     "version": "14.0.0",
@@ -13,7 +13,7 @@
         },
         {
             "name": "686d7066",
-            "url": "https://github.com/686d7066/encounter-visibility"
+            "url": "https://github.com/686d7066"
         }
     ],
     "compatibility": {

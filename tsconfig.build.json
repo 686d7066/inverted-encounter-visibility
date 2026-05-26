@@ -2,8 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "rootDir": "./src",
-    "outDir": "./dist/encounter-visibility"
+    "rootDir": "./src"
   },
   "include": [
     "src/scripts/**/*.ts",

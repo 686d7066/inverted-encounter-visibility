@@ -15,3 +15,7 @@ Text will appear beside the encounter title showing it's been hidden from the pl
 ## For Players
 
 All actors in the encounter will disappear, and the encounter title will change to `No Encounter`, the same as it is before any encounters are added.
+
+## Credits
+
+This module is based on [fvtt-encounter-visibility](https://github.com/Rkfmckee/fvtt-encounter-visibility)

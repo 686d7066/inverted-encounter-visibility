@@ -1,0 +1,92 @@
+name: CI/CD
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    module-version-check:
+        name: Module Version Check
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Compare src/module.json versions
+              run: node --experimental-strip-types ./.github/workflows/check-module-version.ts "${{ github.event.pull_request.base.sha }}"
+
+    ci:
+        name: Build and Test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Run Tests
+              run: npm test
+
+            - name: Build Module
+              run: npm run build
+
+            - name: Upload Build Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: module-build
+                  path: dist/encounter-visibility
+
+    release:
+        name: Create Release
+        runs-on: ubuntu-latest
+        needs: ci
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        permissions:
+            contents: write
+        steps:
+            - name: Download Build Artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: module-build
+                  path: release
+
+            - name: Get Version
+              id: get-version
+              shell: bash
+              run: echo "version=$(node --experimental-strip-types ./.github/workflows/get-version.ts release/module.json)" >> "$GITHUB_OUTPUT"
+
+            - name: Package Module
+              shell: bash
+              run: |
+                  cd release
+                  zip -r ../module.zip module.json languages/ scripts/ styles/ templates/ images/
+
+            - name: Create Release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  name: "v${{ steps.get-version.outputs.version }}"
+                  draft: false
+                  prerelease: false
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  artifacts: "./release/module.json,./module.zip"
+                  tag: ${{ steps.get-version.outputs.version }}
