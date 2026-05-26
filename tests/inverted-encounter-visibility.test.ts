@@ -190,6 +190,39 @@ test("hides encounter details for players on render when encounter is hidden", a
   assert.equal(encounterList.innerHTML, "");
 });
 
+test("appends hidden marker to encounter title for GM on render when encounter is hidden", async () => {
+  const mocks = installFoundryMocks(true);
+  await import("../src/scripts/inverted-encounter-visibility.ts");
+
+  mocks.settingValues.set("inverted-encounter-visibility.encounterTitleGm", " (Hidden)");
+
+  const renderApplication = mocks.hookCallbacks.get("renderApplicationV2");
+  if (!renderApplication) throw new Error("Expected renderApplicationV2 hook callback");
+
+  const appendedNodes: Array<{ textContent: string }> = [];
+  const encounterTitle = {
+    appendChild: (node: { textContent: string }) => {
+      appendedNodes.push(node);
+      return node;
+    }
+  };
+  const rootElement = {
+    querySelector: (selector: string) => {
+      if (selector === ".encounter-title") return encounterTitle;
+      return null;
+    }
+  };
+  const application = {
+    constructor: { name: "CombatTracker" },
+    viewed: { getFlag: () => false, setFlag: () => undefined }
+  };
+
+  renderApplication(application, rootElement);
+
+  assert.equal(appendedNodes.length, 1);
+  assert.equal(appendedNodes[0]?.textContent, " (Hidden)");
+});
+
 test("forces hidden encounters visible on combat start for GM", async () => {
   const mocks = installFoundryMocks(true);
   await import("../src/scripts/inverted-encounter-visibility.ts");

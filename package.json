@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node --experimental-transform-types scripts/build.ts",
+    "pr:comments": "node --experimental-transform-types scripts/pr-unresolved-comments.ts",
     "test": "vitest run"
   },
   "devDependencies": {

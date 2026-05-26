@@ -10,7 +10,7 @@ Starting combat as a GM also automatically makes that encounter visible to playe
 ## For the Game Master
 
 Text will appear beside the encounter title showing it's been hidden from the players. The button will then change to a `Show Encounter to Players` button, so the visibility can be reversed.
-![Inverted Encounter Visibility example in Foundry](images/inverted-encounter-visibility-example.png)
+![Inverted Encounter Visibility example in Foundry](src/images/inverted-encounter-visibility-example.png)
 
 ## For Players
 
