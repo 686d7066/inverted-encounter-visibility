@@ -73,7 +73,7 @@ function installFoundryMocks(isGM = true): {
 
 test("registers expected hooks and module settings", async () => {
   const mocks = installFoundryMocks(true);
-  await import("../src/scripts/encounter-visibility.ts");
+  await import("../src/scripts/inverted-encounter-visibility.ts");
 
   assert.equal(typeof mocks.hookCallbacks.get("getDocumentContextOptions"), "function");
   assert.equal(typeof mocks.hookCallbacks.get("combatStart"), "function");
@@ -92,7 +92,7 @@ test("registers expected hooks and module settings", async () => {
 
 test("adds show and hide options for combat tracker context menu", async () => {
   const mocks = installFoundryMocks(true);
-  await import("../src/scripts/encounter-visibility.ts");
+  await import("../src/scripts/inverted-encounter-visibility.ts");
 
   const getContextOptions = mocks.hookCallbacks.get("getDocumentContextOptions");
   if (!getContextOptions) throw new Error("Expected getDocumentContextOptions hook callback");
@@ -126,7 +126,7 @@ test("adds show and hide options for combat tracker context menu", async () => {
 
 test("hides encounter details for players on render when encounter is hidden", async () => {
   const mocks = installFoundryMocks(false);
-  await import("../src/scripts/encounter-visibility.ts");
+  await import("../src/scripts/inverted-encounter-visibility.ts");
 
   mocks.settingValues.set("inverted-encounter-visibility.encounterTitlePlayer", "No Encounter");
 
@@ -155,7 +155,7 @@ test("hides encounter details for players on render when encounter is hidden", a
 
 test("forces hidden encounters visible on combat start for GM", async () => {
   const mocks = installFoundryMocks(true);
-  await import("../src/scripts/encounter-visibility.ts");
+  await import("../src/scripts/inverted-encounter-visibility.ts");
 
   const combatStart = mocks.hookCallbacks.get("combatStart");
   if (!combatStart) throw new Error("Expected combatStart hook callback");
@@ -176,7 +176,7 @@ test("forces hidden encounters visible on combat start for GM", async () => {
 
 test("uses the same module id for flags as module.json", async () => {
   installFoundryMocks(true);
-  const { EncounterVisibility } = await import("../src/scripts/encounter-visibility.ts");
+  const { EncounterVisibility } = await import("../src/scripts/inverted-encounter-visibility.ts");
   const moduleJsonPath = resolve(process.cwd(), "src", "module.json");
   const moduleJson = JSON.parse(readFileSync(moduleJsonPath, "utf8")) as { id?: unknown };
 

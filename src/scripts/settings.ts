@@ -1,4 +1,4 @@
-import { EncounterVisibility } from "./encounter-visibility.js";
+import { EncounterVisibility } from "./inverted-encounter-visibility.js";
 
 export class EncounterVisibilitySettings {
     static encounterTitleGmId = "encounterTitleGm";
