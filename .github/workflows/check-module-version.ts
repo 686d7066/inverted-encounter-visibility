@@ -1,0 +1,114 @@
+/// <reference types="node" />
+
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const moduleSourceRoots = ["src/"] as const;
+
+function run(command: string, args: string[]): string {
+  return execFileSync(command, args, {
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+  }).trim();
+}
+
+function getErrorText(error: unknown): string {
+  if (error && typeof error === "object") {
+    const maybeError = error as { stderr?: unknown; message?: unknown };
+    const stderr = maybeError.stderr;
+    if (typeof stderr === "string") return stderr;
+    if (stderr instanceof Uint8Array) return new TextDecoder().decode(stderr);
+    if (typeof maybeError.message === "string") return maybeError.message;
+  }
+  return "";
+}
+
+function getBaseModuleJson(baseSha: string): string | null {
+  try {
+    return run("git", ["show", `${baseSha}:src/module.json`]);
+  } catch (error) {
+    const details = getErrorText(error);
+    if (details.includes("exists on disk, but not in")) return null;
+    throw error;
+  }
+}
+
+function getChangedFiles(baseSha: string): string[] {
+  const output = run("git", ["diff", "--name-only", `${baseSha}...HEAD`]);
+  if (output.length === 0) return [];
+  return output.split(/\r?\n/).filter((entry) => entry.length > 0);
+}
+
+function isModuleSourceFile(path: string): boolean {
+  return moduleSourceRoots.some((root) => path.startsWith(root));
+}
+
+function parseVersionSegments(version: string): number[] {
+  const core = version.split("-", 1)[0];
+  const segments = core.split(".").map((segment) => Number.parseInt(segment, 10));
+
+  if (segments.length === 0 || segments.some((segment) => Number.isNaN(segment))) {
+    throw new Error(`Invalid version format: ${version}`);
+  }
+
+  return segments;
+}
+
+function compareVersions(left: number[], right: number[]): number {
+  const length = Math.max(left.length, right.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const leftValue = left[index] ?? 0;
+    const rightValue = right[index] ?? 0;
+
+    if (leftValue !== rightValue) {
+      return leftValue - rightValue;
+    }
+  }
+
+  return 0;
+}
+
+const baseSha = process.argv[2];
+if (!baseSha) {
+  throw new Error("Missing pull request base SHA argument.");
+}
+
+const changedFiles = getChangedFiles(baseSha);
+const changedModuleSourceFiles = changedFiles.filter(isModuleSourceFile);
+
+if (changedModuleSourceFiles.length === 0) {
+  console.log("No module source changes detected; skipping version bump check.");
+  process.exit(0);
+}
+
+console.log(`Module source changes detected in ${changedModuleSourceFiles.length} file(s).`);
+
+const scriptPath = ".github/workflows/get-version.ts";
+const headVersion = run("node", ["--experimental-strip-types", scriptPath]);
+const baseModuleJson = getBaseModuleJson(baseSha);
+
+if (!baseModuleJson) {
+  console.log("Base revision has no src/module.json; skipping version bump check for initial module introduction.");
+  process.exit(0);
+}
+
+const tempDirectory = mkdtempSync(join(tmpdir(), "inverted-encounter-visibility-base-"));
+const baseModuleJsonPath = join(tempDirectory, "module.json");
+
+try {
+  writeFileSync(baseModuleJsonPath, baseModuleJson, "utf8");
+
+  const baseVersion = run("node", ["--experimental-strip-types", scriptPath, baseModuleJsonPath]);
+
+  console.log(`Base version: ${baseVersion}`);
+  console.log(`Head version: ${headVersion}`);
+
+  if (compareVersions(parseVersionSegments(headVersion), parseVersionSegments(baseVersion)) <= 0) {
+    throw new Error("src/module.json version must be increased for this PR.");
+  }
+} finally {
+  rmSync(tempDirectory, { recursive: true, force: true });
+}

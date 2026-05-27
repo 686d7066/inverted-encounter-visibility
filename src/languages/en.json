@@ -1,0 +1,18 @@
+{
+    "INVERTED-ENCOUNTER-VISIBILITY": {
+        "Context": {
+            "ShowEncounterToPlayers": "Show Encounter to Players",
+            "HideEncounterFromPlayers": "Hide Encounter from Players"
+        },
+        "Settings": {
+            "EncounterTitleGm": {
+                "Name": "Hidden Encounter Title append (for GM)",
+                "Hint": "Text to append to the Encounter Title for the GM to show them an encounter is hidden."
+            },
+            "EncounterTitlePlayer": {
+                "Name": "Hidden Encounter Title (for Players)",
+                "Hint": "Text to show as the Encounter Title for players when the encounter is hidden from them."
+            }
+        }
+    }
+}

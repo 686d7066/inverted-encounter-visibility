@@ -1,0 +1,15 @@
+{
+  "name": "inverted-encounter-visibility",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --experimental-transform-types scripts/build.ts",
+    "pr:comments": "node --experimental-transform-types scripts/pr-unresolved-comments.ts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.8"
+  }
+}

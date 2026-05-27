@@ -1,0 +1,103 @@
+name: CI/CD
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    module-version-check:
+        name: Module Version Check
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Compare src/module.json versions
+              run: node --experimental-strip-types ./.github/workflows/check-module-version.ts "${{ github.event.pull_request.base.sha }}"
+
+    validate:
+        name: Test and Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Run Tests
+              run: npm test
+
+            - name: Build
+              run: npm run build
+
+    release:
+        name: Create Release
+        runs-on: ubuntu-latest
+        needs: validate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Get Version
+              id: get-version
+              shell: bash
+              run: echo "version=$(node --experimental-strip-types ./.github/workflows/get-version.ts)" >> "$GITHUB_OUTPUT"
+
+            - name: Get Module Id
+              id: get-module-id
+              shell: bash
+              run: echo "module_id=$(node --experimental-strip-types ./.github/workflows/get-module-id.ts)" >> "$GITHUB_OUTPUT"
+
+            - name: Package Module
+              shell: bash
+              run: |
+                  module_root="dist/${{ steps.get-module-id.outputs.module_id }}"
+                  cd "$module_root"
+                  zip -r "$GITHUB_WORKSPACE/module.zip" .
+
+            - name: Create Release
+              uses: ncipollo/release-action@v1
+              with:
+                  allowUpdates: true
+                  name: "v${{ steps.get-version.outputs.version }}"
+                  draft: false
+                  prerelease: false
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  artifacts: "./dist/${{ steps.get-module-id.outputs.module_id }}/module.json,./module.zip"
+                  tag: ${{ steps.get-version.outputs.version }}
+                  commit: ${{ github.sha }}
